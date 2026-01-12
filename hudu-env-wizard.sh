@@ -1,3 +1,4 @@
+```bash
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -72,7 +73,6 @@ prompt_secret_hidden() {
   while true; do
     read -r -s -p "    $label: " v || exit 1
     echo
-    # Strip newlines and carriage returns (can appear when pasting)
     v="${v//$'\n'/}"
     v="${v//$'\r'/}"
     v="$(trim "$v")"
@@ -88,6 +88,12 @@ gen_rand_hex() {
   else
     head -c "$nbytes" /dev/urandom | od -An -tx1 | tr -d ' \n'
   fi
+}
+
+gen_rand_ascii() {
+  local length="$1"
+  # Outputs a random alphanumeric string of requested length (ASCII-safe)
+  LC_CTYPE=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c "$length"
 }
 
 # dotenv single-quote escaping: ' -> '"'"'
@@ -174,15 +180,14 @@ fi
 # ---------- generate secrets ----------
 echo -e "\n${DIM}Generating secure keys...${RESET}"
 SECRET_KEY_BASE="$(gen_rand_hex 64)"
-PASSWORD_KEY="$(gen_rand_hex 32)"
-TWO_FACTOR_KEY="$(gen_rand_hex 32)"
+PASSWORD_KEY="$(gen_rand_ascii 32)"
+TWO_FACTOR_KEY="$(gen_rand_ascii 32)"
 
 # ---------- defaults ----------
 PUID="1000"
 PGID="1000"
 DB_PASSWORD=""
 
-# SMTP left blank for later configuration
 SMTP_DOMAIN=""
 SMTP_ADDRESS=""
 SMTP_PORT=""
@@ -274,3 +279,4 @@ echo -e "  ${YELLOW}⚠ Important:${RESET}"
 echo -e "    Copy this .env file somewhere secure. Losing it could mean"
 echo -e "    losing access to passwords and other encrypted data."
 echo
+```
