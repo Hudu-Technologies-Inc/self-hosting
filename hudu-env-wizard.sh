@@ -94,7 +94,8 @@ gen_rand_ascii() {
   local length="$1"
   # Outputs a random alphanumeric string of requested length (ASCII-safe).
   # macOS/BSD tr may error without LC_CTYPE=C.
-  LC_CTYPE=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c "$length"
+  # Subshell + || true prevents SIGPIPE exit (when head closes early) from failing under pipefail.
+  ( LC_CTYPE=C tr -dc 'A-Za-z0-9' < /dev/urandom || true ) | head -c "$length"
 }
 
 # dotenv single-quote escaping: ' -> '"'"'
