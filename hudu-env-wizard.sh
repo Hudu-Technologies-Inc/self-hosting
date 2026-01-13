@@ -19,7 +19,7 @@ have() { command -v "$1" >/dev/null 2>&1; }
 
 trim() {
   local s="$*"
-  echo "$s" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//'
+  echo "$s" | LC_ALL=C sed 's/^[[:space:]]*//; s/[[:space:]]*$//'
 }
 
 print_step() {
@@ -101,7 +101,7 @@ gen_rand_ascii() {
 # dotenv single-quote escaping: ' -> '"'"'
 dq() {
   local v="$1"
-  v="$(printf "%s" "$1" | sed "s/'/'\"'\"'/g")"
+  v="$(printf "%s" "$1" | LC_ALL=C sed "s/'/'\"'\"'/g")"
   printf "'%s'" "$v"
 }
 
@@ -181,9 +181,9 @@ fi
 
 # ---------- generate secrets ----------
 echo -e "\n${DIM}Generating secure keys...${RESET}"
-SECRET_KEY_BASE="$(gen_rand_hex 64)" || die "Failed to generate SECRET_KEY_BASE"
-PASSWORD_KEY="$(gen_rand_ascii 32)" || die "Failed to generate PASSWORD_KEY"
-TWO_FACTOR_KEY="$(gen_rand_ascii 32)" || die "Failed to generate TWO_FACTOR_KEY"
+SECRET_KEY_BASE="$(gen_rand_hex 64)"
+PASSWORD_KEY="$(gen_rand_ascii 32)"
+TWO_FACTOR_KEY="$(gen_rand_ascii 32)"
 
 # ---------- defaults ----------
 PUID="1000"
