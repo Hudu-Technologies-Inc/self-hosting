@@ -183,8 +183,8 @@ fi
 # ---------- generate secrets ----------
 echo -e "\n${DIM}Generating secure keys...${RESET}"
 SECRET_KEY_BASE="$(gen_rand_hex 64)"
-PASSWORD_KEY="$(gen_rand_base64 32)"
-TWO_FACTOR_KEY="$(gen_rand_base64 32)"
+PASSWORD_KEY="$(gen_rand_hex 16)"
+TWO_FACTOR_KEY="$(gen_rand_hex 16)"
 
 # ---------- defaults ----------
 PUID="1000"
