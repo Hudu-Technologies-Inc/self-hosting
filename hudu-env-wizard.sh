@@ -19,7 +19,11 @@ have() { command -v "$1" >/dev/null 2>&1; }
 
 trim() {
   local s="$*"
-  echo "$s" | LC_ALL=C sed 's/^[[:space:]]*//; s/[[:space:]]*$//'
+  # Remove leading whitespace
+  s="${s#"${s%%[![:space:]]*}"}"
+  # Remove trailing whitespace
+  s="${s%"${s##*[![:space:]]}"}"
+  printf '%s' "$s"
 }
 
 print_step() {
@@ -101,7 +105,8 @@ gen_rand_ascii() {
 # dotenv single-quote escaping: ' -> '"'"'
 dq() {
   local v="$1"
-  v="$(printf "%s" "$1" | LC_ALL=C sed "s/'/'\"'\"'/g")"
+  # Pure bash replacement to avoid sed locale issues with binary-like input
+  v="${v//\'/\'\"\'\"\'}"
   printf "'%s'" "$v"
 }
 
