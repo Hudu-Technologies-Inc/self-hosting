@@ -19,11 +19,7 @@ have() { command -v "$1" >/dev/null 2>&1; }
 
 trim() {
   local s="$*"
-  # Remove leading whitespace
-  s="${s#"${s%%[![:space:]]*}"}"
-  # Remove trailing whitespace
-  s="${s%"${s##*[![:space:]]}"}"
-  printf '%s' "$s"
+  echo "$s" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//'
 }
 
 print_step() {
@@ -94,19 +90,19 @@ gen_rand_hex() {
   fi
 }
 
-gen_rand_ascii() {
-  local length="$1"
-  # Outputs a random alphanumeric string of requested length (ASCII-safe).
-  # macOS/BSD tr may error without LC_CTYPE=C.
-  # Subshell + || true prevents SIGPIPE exit (when head closes early) from failing under pipefail.
-  ( LC_CTYPE=C tr -dc 'A-Za-z0-9' < /dev/urandom || true ) | head -c "$length"
+gen_rand_base64() {
+  local nbytes="$1"
+  if have openssl; then
+    openssl rand -base64 "$nbytes" | tr -d '\n'
+  else
+    head -c "$nbytes" /dev/urandom | base64 | tr -d '\n'
+  fi
 }
 
 # dotenv single-quote escaping: ' -> '"'"'
 dq() {
   local v="$1"
-  # Pure bash replacement to avoid sed locale issues with binary-like input
-  v="${v//\'/\'\"\'\"\'}"
+  v="$(printf "%s" "$1" | sed "s/'/'\"'\"'/g")"
   printf "'%s'" "$v"
 }
 
@@ -187,8 +183,8 @@ fi
 # ---------- generate secrets ----------
 echo -e "\n${DIM}Generating secure keys...${RESET}"
 SECRET_KEY_BASE="$(gen_rand_hex 64)"
-PASSWORD_KEY="$(gen_rand_ascii 32)"
-TWO_FACTOR_KEY="$(gen_rand_ascii 32)"
+PASSWORD_KEY="$(gen_rand_base64 32)"
+TWO_FACTOR_KEY="$(gen_rand_base64 32)"
 
 # ---------- defaults ----------
 PUID="1000"
